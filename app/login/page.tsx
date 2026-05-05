@@ -39,7 +39,7 @@ export default function LoginPage() {
   }
 
   async function verifyOtp() {
-    if (otp.length < 6) { toast.error("请输入完整验证码"); return; }
+    if (otp.length < 6) { toast.error("验证码不完整，请检查后重试"); return; }
     setLoading(true);
     const { error } = await supabase.auth.verifyOtp({
       email, token: otp, type: "email",

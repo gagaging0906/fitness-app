@@ -68,9 +68,11 @@
     background: #07090C;
   }
 
-  /* Input 16px 防 iOS 自动放大 */
+  /* Input 16px 防 iOS 自动放大，-webkit-text-fill-color 防 Safari 用黑色覆盖 */
   input, select, textarea {
     font-size: 16px;
+    color: #F5F7FA;
+    -webkit-text-fill-color: #F5F7FA;
   }
 
   /* 滚动条（桌面端） */
