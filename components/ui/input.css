@@ -1,0 +1,14 @@
+/* 处理浏览器自动填充的文本颜色 */
+input.autofill-input:-webkit-autofill,
+input.autofill-input:-webkit-autofill:hover,
+input.autofill-input:-webkit-autofill:focus,
+input.autofill-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.04) inset !important;
+  box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.04) inset !important;
+  -webkit-text-fill-color: #F5F7FA !important;
+}
+
+/* Focus 时的自动填充样式 */
+input.autofill-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.06) inset, 0 0 0 2px rgba(0, 229, 255, 0.6) !important;
+}
