@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================================================
+   暗夜驾驶舱主题 — Dark Cockpit
+   主色：#00E5FF（电光青）  底色：#07090C（近黑）
+   ======================================================================== */
+
+@layer base {
+  :root {
+    /* ── Shadcn token 映射（全部暗色版本）─────────────────────── */
+    --background:           216 27% 4%;      /* #07090C */
+    --foreground:           213 33% 97%;     /* #F5F7FA */
+
+    --card:                 218 23% 7%;      /* #0E1116 */
+    --card-foreground:      213 33% 97%;
+
+    --popover:              215 20% 11%;     /* #161A21 */
+    --popover-foreground:   213 33% 97%;
+
+    --primary:              187 100% 50%;    /* #00E5FF 电光青 */
+    --primary-foreground:   0 0% 0%;         /* 黑字在青色底 */
+
+    --secondary:            215 20% 11%;     /* #161A21 */
+    --secondary-foreground: 213 33% 97%;
+
+    --muted:                218 23% 7%;      /* #0E1116 */
+    --muted-foreground:     215 9% 67%;      /* #A1A8B3 */
+
+    --accent:               215 19% 14%;     /* #1C2129 */
+    --accent-foreground:    213 33% 97%;
+
+    --destructive:          0 91% 71%;       /* #F87171 */
+    --destructive-foreground: 0 0% 0%;
+
+    --border:               216 15% 13%;
+    --input:                216 20% 10%;
+    --ring:                 187 100% 50%;    /* 聚焦光环 = 电光青 */
+    --radius:               0.625rem;        /* 10px */
+
+    /* ── 安全区 ────────────────────────────────────────────────── */
+    --safe-top:    env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    @apply bg-background text-foreground;
+    font-family:
+      -apple-system, BlinkMacSystemFont,
+      "PingFang SC", "Hiragino Sans GB",
+      "Source Han Sans CN", "Noto Sans CJK SC",
+      "Microsoft YaHei", "微软雅黑",
+      "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    line-height: 1.6;
+    overflow-x: hidden;
+    touch-action: manipulation;
+    /* 防止 iOS 下拉回弹白边 */
+    background: #07090C;
+  }
+
+  /* Input 16px 防 iOS 自动放大 */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* 滚动条（桌面端） */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+}
+
+/* ========================================================================
+   布局组件
+   ======================================================================== */
+@layer components {
+
+  /* 手机容器 */
+  .mobile-shell {
+    @apply mx-auto w-full max-w-[640px] min-h-screen;
+    background: #07090C;
+  }
+
+  /* 页面内容区：左右 padding + 底部为浮岛 Navbar 留空 */
+  .page-padding {
+    @apply px-4 pt-4 pb-32;
+  }
+
+  /* 最小触控区 44×44 */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* 安全区辅助 */
+  .safe-top    { padding-top: var(--safe-top); }
+  .safe-bottom { padding-bottom: var(--safe-bottom); }
+
+  /* ── 玻璃卡片 ─────────────────────────────────────────────────── */
+  .glass-card {
+    background: #0E1116;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.06), 0 1px 0 0 rgba(0,0,0,0.4);
+  }
+
+  /* ── 顶部柔光晕（英雄卡片用）─────────────────────────────────── */
+  .card-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% -20%, rgba(0,229,255,0.10) 0%, transparent 60%);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* ── 强调色发光描边 ──────────────────────────────────────────── */
+  .ring-accent {
+    box-shadow: 0 0 0 1px rgba(0,229,255,0.3), 0 0 20px -4px rgba(0,229,255,0.4);
+  }
+
+  /* ── 骨架屏 shimmer ──────────────────────────────────────────── */
+  .skeleton {
+    @apply rounded-lg;
+    background: linear-gradient(90deg, #0E1116 0%, #1C2129 50%, #0E1116 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  /* ── 数字 display 字体快捷类 ─────────────────────────────────── */
+  .font-display {
+    font-family: var(--font-mono, "JetBrains Mono", monospace);
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── micro label 全大写 ──────────────────────────────────────── */
+  .label-micro {
+    @apply text-micro uppercase tracking-[0.08em];
+    color: #5C6470;
+  }
+
+  /* ── 进度条轨道 + 进度 ───────────────────────────────────────── */
+  .progress-track {
+    @apply h-1.5 rounded-full overflow-hidden;
+    background: rgba(255,255,255,0.07);
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-1000;
+    background: linear-gradient(90deg, #00E5FF 0%, #0EA5E9 100%);
+    box-shadow: 0 0 10px rgba(0,229,255,0.5);
+  }
+
+  /* ── Tab 指示器 ──────────────────────────────────────────────── */
+  .tab-indicator {
+    @apply absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full;
+    background: #00E5FF;
+    box-shadow: 0 0 6px rgba(0,229,255,0.6);
+  }
+}
+
+/* ========================================================================
+   动画
+   ======================================================================== */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes progress-fill {
+  from { width: 0; }
+}
