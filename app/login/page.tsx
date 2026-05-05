@@ -89,7 +89,7 @@ export default function LoginPage() {
                 type="text" inputMode="numeric"
                 autoComplete="one-time-code"
                 pattern="\d{6,10}" maxLength={10}
-                placeholder="请输入邮件中的 6 位验证码"
+                placeholder="请输入验证码"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
               />
@@ -115,7 +115,7 @@ export default function LoginPage() {
           </Button>
         </div>
 
-        <p className="text-center text-[11px] text-[#3A4049] leading-relaxed">
+        <p className="text-center text-[11px] text-[#A1A8B3] leading-relaxed">
           登录即同意《用户协议》与《隐私政策》<br />本服务仅供健康管理参考，不构成医疗建议
         </p>
       </div>

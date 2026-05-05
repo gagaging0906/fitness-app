@@ -145,7 +145,7 @@
   /* ── micro label 全大写 ──────────────────────────────────────── */
   .label-micro {
     @apply text-micro uppercase tracking-[0.08em];
-    color: #5C6470;
+    color: #A1A8B3;
   }
 
   /* ── 进度条轨道 + 进度 ───────────────────────────────────────── */

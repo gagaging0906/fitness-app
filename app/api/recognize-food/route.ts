@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getServerSupabase } from "@/lib/supabase/server";
 
 /**
  * POST /api/recognize-food
  * Body: FormData(image)
- * 调用 Gemini 2.5 Flash 识别中餐，返回食物列表 & 估算热量
+ * 使用通义千问 VL (qwen-vl-max) 识别中餐，返回食物列表 & 估算热量
  */
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -38,28 +37,49 @@ export async function POST(req: NextRequest) {
   const file = fd.get("image") as File | null;
   if (!file) return NextResponse.json({ error: "missing_image" }, { status: 400 });
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "missing_GEMINI_API_KEY" }, { status: 500 });
+  const apiKey = process.env.DASHSCOPE_API_KEY;
+  if (!apiKey) return NextResponse.json({ error: "missing_DASHSCOPE_API_KEY" }, { status: 500 });
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
-    });
-
     const bytes = Buffer.from(await file.arrayBuffer()).toString("base64");
-    const result = await model.generateContent([
-      { text: PROMPT },
-      { inlineData: { mimeType: file.type || "image/jpeg", data: bytes } },
-    ]);
+    const dataUrl = `data:${file.type || "image/jpeg"};base64,${bytes}`;
 
-    const text = result.response.text().trim();
+    const r = await fetch(
+      "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "qwen-vl-max",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "image_url", image_url: { url: dataUrl } },
+                { type: "text", text: PROMPT },
+              ],
+            },
+          ],
+          temperature: 0.2,
+        }),
+      }
+    );
+
+    if (!r.ok) {
+      const errText = await r.text();
+      throw new Error("通义识图失败：" + errText.slice(0, 200));
+    }
+
+    const j = await r.json();
+    const text = (j.choices?.[0]?.message?.content ?? "").trim();
+
     let items: unknown;
     try {
       items = JSON.parse(text);
     } catch {
-      // 抽取 JSON 数组片段兜底
       const match = text.match(/\[[\s\S]*\]/);
       items = match ? JSON.parse(match[0]) : [];
     }
