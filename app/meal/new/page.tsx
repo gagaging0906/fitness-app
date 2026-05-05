@@ -1,22 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
 import { todayStr, fmt } from "@/lib/utils";
 
 interface FoodItem { name: string; qty: string; kcal: number; protein: number; fat: number; carb: number }
 
-/** 手动录入一餐 */
-export default function MealNewPage() {
+function MealNewContent() {
   const router = useRouter();
   const sp = useSearchParams();
   const supabase = getBrowserSupabase();
@@ -29,12 +26,7 @@ export default function MealNewPage() {
   const [saving, setSaving] = useState(false);
 
   const total = items.reduce(
-    (s, x) => ({
-      kcal: s.kcal + x.kcal,
-      protein: s.protein + x.protein,
-      fat: s.fat + x.fat,
-      carb: s.carb + x.carb,
-    }),
+    (s, x) => ({ kcal: s.kcal + x.kcal, protein: s.protein + x.protein, fat: s.fat + x.fat, carb: s.carb + x.carb }),
     { kcal: 0, protein: 0, fat: 0, carb: 0 }
   );
 
@@ -62,7 +54,7 @@ export default function MealNewPage() {
       .from("daily_logs").select("intake_kcal").eq("user_id", user.id).eq("date", todayStr()).maybeSingle();
     await supabase.from("daily_logs").upsert({
       user_id: user.id, date: todayStr(),
-      intake_kcal: (log?.intake_kcal || 0) + Math.round(total.kcal),
+      intake_kcal: (Number((log as { intake_kcal?: number } | null)?.intake_kcal ?? 0)) + Math.round(total.kcal),
     });
 
     setSaving(false);
@@ -74,8 +66,9 @@ export default function MealNewPage() {
     <>
       <Header title="手动记录" back />
       <main className="page-padding space-y-4">
+        {/* 时段选择 */}
         <div className="space-y-2">
-          <Label>时段</Label>
+          <label className="label-micro pl-0.5">时段</label>
           <Select
             value={slot}
             onChange={(e) => setSlot(e.target.value as typeof slot)}
@@ -88,38 +81,38 @@ export default function MealNewPage() {
           />
         </div>
 
-        <div className="space-y-2">
+        {/* 食物列表 */}
+        <div className="space-y-3">
           {items.map((x, i) => (
-            <Card key={i}>
-              <CardContent className="p-3 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Input value={x.name} onChange={(e) => upd(i, "name", e.target.value)}
-                         placeholder="食物名（如：蛋炒饭）" className="flex-1" />
-                  <button onClick={() => setItems((p) => p.filter((_, idx) => idx !== i))}
-                          className="tap-target text-muted-foreground">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input value={x.qty} onChange={(e) => upd(i, "qty", e.target.value)}
-                         placeholder="份量（如：1 碗）" />
-                  <Input type="number" inputMode="numeric" placeholder="热量 kcal"
-                         value={x.kcal || ""}
-                         onChange={(e) => upd(i, "kcal", Number(e.target.value) || 0)} />
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input type="number" inputMode="decimal" placeholder="蛋白 g"
-                         value={x.protein || ""}
-                         onChange={(e) => upd(i, "protein", Number(e.target.value) || 0)} />
-                  <Input type="number" inputMode="decimal" placeholder="脂肪 g"
-                         value={x.fat || ""}
-                         onChange={(e) => upd(i, "fat", Number(e.target.value) || 0)} />
-                  <Input type="number" inputMode="decimal" placeholder="碳水 g"
-                         value={x.carb || ""}
-                         onChange={(e) => upd(i, "carb", Number(e.target.value) || 0)} />
-                </div>
-              </CardContent>
-            </Card>
+            <div key={i} className="rounded-2xl bg-[#0E1116] border border-white/8
+                                    shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Input value={x.name} onChange={(e) => upd(i, "name", e.target.value)}
+                       placeholder="食物名（如：蛋炒饭）" className="flex-1" />
+                <button onClick={() => setItems((p) => p.filter((_, idx) => idx !== i))}
+                        className="tap-target text-[#5C6470] hover:text-[#F87171]">
+                  <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Input value={x.qty} onChange={(e) => upd(i, "qty", e.target.value)}
+                       placeholder="份量（如：1 碗）" />
+                <Input type="number" inputMode="numeric" placeholder="热量 kcal"
+                       value={x.kcal || ""}
+                       onChange={(e) => upd(i, "kcal", Number(e.target.value) || 0)} />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Input type="number" inputMode="decimal" placeholder="蛋白 g"
+                       value={x.protein || ""}
+                       onChange={(e) => upd(i, "protein", Number(e.target.value) || 0)} />
+                <Input type="number" inputMode="decimal" placeholder="脂肪 g"
+                       value={x.fat || ""}
+                       onChange={(e) => upd(i, "fat", Number(e.target.value) || 0)} />
+                <Input type="number" inputMode="decimal" placeholder="碳水 g"
+                       value={x.carb || ""}
+                       onChange={(e) => upd(i, "carb", Number(e.target.value) || 0)} />
+              </div>
+            </div>
           ))}
         </div>
 
@@ -128,17 +121,28 @@ export default function MealNewPage() {
           <Plus className="h-4 w-4 mr-2" /> 再加一项
         </Button>
 
-        <Card className="bg-gradient-to-br from-orange-50 to-white">
-          <CardContent className="p-4 flex items-center justify-between">
-            <span className="text-sm">合计</span>
-            <span className="text-xl font-bold tabular-nums">{fmt(total.kcal)} kcal</span>
-          </CardContent>
-        </Card>
+        {/* 合计 */}
+        <div className="rounded-2xl bg-[#0E1116] border border-white/8
+                        shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] px-5 py-4
+                        flex items-center justify-between">
+          <span className="text-[13px] text-[#A1A8B3]">合计</span>
+          <span className="font-display text-[22px] font-bold tabular-nums text-[#F5F7FA]">
+            {fmt(total.kcal)} <span className="text-[13px] font-normal text-[#5C6470]">kcal</span>
+          </span>
+        </div>
 
         <Button size="lg" className="w-full" onClick={save} disabled={saving}>
           {saving ? "保存中…" : "保存"}
         </Button>
       </main>
     </>
+  );
+}
+
+export default function MealNewPage() {
+  return (
+    <Suspense fallback={null}>
+      <MealNewContent />
+    </Suspense>
   );
 }

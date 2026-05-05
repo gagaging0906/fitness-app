@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { getBrowserSupabase } from "@/lib/supabase/client";
@@ -29,7 +29,7 @@ function makeEntry(id: string, name: string, type: "strength" | "cardio"): ExEnt
   return { id, name, exType: type, sets: [s], collapsed: false };
 }
 
-export default function WorkoutNewPage() {
+function WorkoutNewContent() {
   const router  = useRouter();
   const sp      = useSearchParams();
   const supabase = getBrowserSupabase();
@@ -310,6 +310,14 @@ export default function WorkoutNewPage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function WorkoutNewPage() {
+  return (
+    <Suspense fallback={null}>
+      <WorkoutNewContent />
+    </Suspense>
   );
 }
 
